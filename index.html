@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ROC · Скрипт общего звонка</title>
+  <style>
+    :root {
+      --bg: #f7f7f8;
+      --paper: #ffffff;
+      --text: #18181b;
+      --muted: #71717a;
+      --line: #e4e4e7;
+      --accent: #f97316;
+      --accent-soft: #fff1e8;
+      --accent-strong: #c2410c;
+      --dark: #27272a;
+      --green: #16a34a;
+      --blue: #2563eb;
+      --shadow: 0 18px 60px rgba(24, 24, 27, 0.08);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(249, 115, 22, 0.14), transparent 32rem),
+        linear-gradient(180deg, #fff 0%, var(--bg) 28rem);
+      line-height: 1.55;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 310px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 22px;
+      border-right: 1px solid var(--line);
+      background: rgba(255,255,255,0.84);
+      backdrop-filter: blur(16px);
+      overflow: auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent), #fb923c);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      box-shadow: 0 10px 26px rgba(249,115,22,0.26);
+    }
+
+    .brand-title { font-weight: 850; letter-spacing: -0.035em; }
+    .brand-subtitle { color: var(--muted); font-size: 13px; margin-top: -2px; }
+
+    .nav-block {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fff;
+      margin-bottom: 14px;
+    }
+
+    .nav-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 10px;
+      border-radius: 12px;
+      color: #3f3f46;
+      font-size: 14px;
+      transition: .18s ease;
+    }
+
+    .nav-link:hover, .nav-link.active { background: var(--accent-soft); color: var(--accent-strong); }
+    .nav-link span:first-child { color: var(--accent); font-weight: 900; }
+
+    .main { min-width: 0; }
+
+    .hero {
+      padding: 48px min(6vw, 78px) 28px;
+    }
+
+    .hero-card {
+      position: relative;
+      overflow: hidden;
+      padding: 36px;
+      border-radius: 32px;
+      background: var(--dark);
+      color: white;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card:after {
+      content: "";
+      position: absolute;
+      width: 420px;
+      height: 420px;
+      right: -170px;
+      top: -190px;
+      border-radius: 999px;
+      background: rgba(249,115,22,.35);
+      filter: blur(6px);
+    }
+
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.11);
+      border: 1px solid rgba(255,255,255,.14);
+      color: #fed7aa;
+      font-weight: 800;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+
+    h1, h2, h3 { letter-spacing: -0.045em; line-height: 1.12; }
+    h1 { position: relative; z-index: 1; font-size: clamp(34px, 4.6vw, 68px); margin: 0 0 16px; max-width: 900px; }
+    .hero p { position: relative; z-index: 1; color: #d4d4d8; max-width: 760px; font-size: 18px; margin: 0; }
+
+    .quick-actions {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 26px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-weight: 800;
+      border: 1px solid transparent;
+      transition: .18s ease;
+    }
+
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { transform: translateY(-1px); background: #ea580c; }
+    .btn-secondary { color: white; border-color: rgba(255,255,255,.18); background: rgba(255,255,255,.08); }
+    .btn-secondary:hover { background: rgba(255,255,255,.13); }
+
+    .content {
+      padding: 0 min(6vw, 78px) 72px;
+      display: grid;
+      gap: 22px;
+    }
+
+    .section {
+      background: rgba(255,255,255,.92);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      scroll-margin-top: 18px;
+    }
+
+    .section-header {
+      padding: 24px 28px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .section h2 { margin: 0; font-size: clamp(24px, 3vw, 36px); }
+    .section h3 { margin: 0 0 12px; font-size: 22px; }
+    .section-body { padding: 24px 28px 28px; }
+
+    .note-list { margin: 0; padding-left: 0; list-style: none; display: grid; gap: 10px; }
+    .note-list li {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: #fafafa;
+      border: 1px solid var(--line);
+    }
+    .check { color: var(--accent); font-weight: 950; }
+
+    .script-line {
+      position: relative;
+      margin: 12px 0;
+      padding: 16px 48px 16px 18px;
+      border-radius: 16px;
+      background: #fafafa;
+      border: 1px solid var(--line);
+      font-style: italic;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      border: 0;
+      border-radius: 10px;
+      padding: 7px 9px;
+      background: #fff;
+      color: var(--muted);
+      cursor: pointer;
+      border: 1px solid var(--line);
+      font-size: 12px;
+    }
+    .copy-btn:hover { color: var(--accent-strong); background: var(--accent-soft); }
+
+    .branch-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .branch-card {
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .answer {
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px dashed #fdba74;
+      background: var(--accent-soft);
+      margin: 10px 0;
+    }
+
+    .goto {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 11px;
+      border-radius: 12px;
+      background: var(--dark);
+      color: #fff;
+      font-weight: 800;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+    .goto:hover { background: #000; }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      font-weight: 850;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .decision-table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+    .decision-table th, .decision-table td {
+      padding: 15px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    .decision-table th { background: #fafafa; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+    .decision-table tr:last-child td { border-bottom: 0; }
+
+    details {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+      overflow: hidden;
+      margin: 12px 0;
+    }
+    summary {
+      cursor: pointer;
+      padding: 15px 18px;
+      font-weight: 850;
+      list-style: none;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary:after { content: "+"; float: right; color: var(--accent); font-weight: 900; }
+    details[open] summary:after { content: "−"; }
+    .details-body { padding: 0 18px 18px; color: #3f3f46; }
+
+    .formula {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      counter-reset: step;
+      margin-top: 14px;
+    }
+    .step {
+      counter-increment: step;
+      padding: 16px;
+      border-radius: 16px;
+      background: #fafafa;
+      border: 1px solid var(--line);
+      font-weight: 700;
+    }
+    .step:before {
+      content: counter(step);
+      display: inline-grid;
+      place-items: center;
+      width: 25px;
+      height: 25px;
+      margin-right: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 13px;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      padding: 10px 0 0;
+    }
+
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: relative; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      .branch-grid, .formula { grid-template-columns: 1fr; }
+      .hero, .content { padding-left: 18px; padding-right: 18px; }
+      .hero-card { padding: 26px; }
+      .section-header, .section-body { padding-left: 20px; padding-right: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">R</div>
+        <div>
+          <div class="brand-title">ROC Scripts</div>
+          <div class="brand-subtitle">Общий сценарий звонка</div>
+        </div>
+      </div>
+
+      <div class="nav-block">
+        <div class="nav-label">Страницы</div>
+        <a class="nav-link active" href="index.html"><span>●</span> Скрипт общий</a>
+        <a class="nav-link" href="op.html"><span>→</span> Секретарь / менеджер</a>
+        <a class="nav-link" href="lpr.html"><span>→</span> ЛПР</a>
+      </div>
+
+      <div class="nav-block">
+        <div class="nav-label">Навигация</div>
+        <a class="nav-link" href="#before"><span>01</span> Перед началом</a>
+        <a class="nav-link" href="#variant-a"><span>02</span> Имя ЛПР известно</a>
+        <a class="nav-link" href="#variant-b"><span>03</span> Имя ЛПР неизвестно</a>
+        <a class="nav-link" href="#detect"><span>04</span> Как определить</a>
+        <a class="nav-link" href="#fork"><span>05</span> Развилка</a>
+        <a class="nav-link" href="#rule"><span>06</span> Главное правило</a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="hero">
+        <div class="hero-card">
+          <div class="kicker">Главная страница сценария</div>
+          <h1>Скрипт общего холодного звонка ROC</h1>
+          <p>Стартовая страница, с которой менеджер быстро определяет собеседника и переходит в нужную ветку разговора: к секретарю, менеджеру или ЛПР.</p>
+          <div class="quick-actions">
+            <a class="btn btn-primary" href="#variant-a">Начать с известным ЛПР</a>
+            <a class="btn btn-secondary" href="#variant-b">Начать без имени ЛПР</a>
+            <a class="btn btn-secondary" href="#detect">Определить собеседника</a>
+          </div>
+        </div>
+      </section>
+
+      <div class="content">
+        <section class="section" id="before">
+          <div class="section-header">
+            <div>
+              <h2>Перед началом обзвона</h2>
+            </div>
+            <span class="tag">подготовка</span>
+          </div>
+          <div class="section-body">
+            <ul class="note-list">
+              <li><span class="check">✓</span><span>Освоить <strong>Правила звонка</strong>.</span></li>
+              <li><span class="check">✓</span><span>Понимать <strong>Цели звонка</strong>.</span></li>
+              <li><span class="check">✓</span><span>Полностью изучить <strong>Обучающий материал для отдела продаж</strong>.</span></li>
+              <li><span class="check">✓</span><span>Изучить соцсети, сайт и другую информацию из открытых источников. Зачастую на сайте в разделе «Команда» можно узнать имя ЛПР.</span></li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="section" id="variant-a">
+          <div class="section-header">
+            <h2>Вариант А: имя ЛПР известно</h2>
+            <span class="tag">старт</span>
+          </div>
+          <div class="section-body">
+            <h3>Старт разговора</h3>
+            <div class="script-line">Добрый день. Это [Имя ЛПР]?<button class="copy-btn" type="button">копировать</button></div>
+
+            <div class="branch-grid">
+              <div class="branch-card">
+                <h3>«Да, это я» / «Слушаю»</h3>
+                <p>ЛПР на проводе. Перейти в сценарий ЛПР, старт «ЛПР подтвердил, что это он».</p>
+                <a class="goto" href="lpr.html#start-a">Открыть скрипт ЛПР →</a>
+              </div>
+              <div class="branch-card">
+                <h3>«А кто это?» / «Кто спрашивает?»</h3>
+                <div class="script-line">Это Ярослав, компания ROC. Могу я услышать [Имя ЛПР]?<button class="copy-btn" type="button">копировать</button></div>
+              </div>
+              <div class="branch-card">
+                <h3>«Это не он. А кто вы?»</h3>
+                <p>Секретарь или сотрудник. Перейти в ветку «Имя ЛПР известно».</p>
+                <a class="goto" href="op.html#known-name">Открыть скрипт секретаря →</a>
+              </div>
+              <div class="branch-card">
+                <h3>«А по какому вопросу?»</h3>
+                <p>Фильтр. Перейти в ветку «Имя ЛПР известно».</p>
+                <a class="goto" href="op.html#known-name">Открыть скрипт секретаря →</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="variant-b">
+          <div class="section-header">
+            <h2>Вариант Б: имя ЛПР неизвестно</h2>
+            <span class="tag">старт</span>
+          </div>
+          <div class="section-body">
+            <h3>Старт разговора</h3>
+            <div class="script-line">Добрый день. Это Ярослав, компания ROC. Не отвлекаю?<button class="copy-btn" type="button">копировать</button></div>
+
+            <details open>
+              <summary>«Да, говорите» / «Слушаю»</summary>
+              <div class="details-body">
+                <p>По таблице определения ниже понять, ЛПР или нет:</p>
+                <ul>
+                  <li><strong>ЛПР</strong> → перейти в скрипт ЛПР, старт «Да, говорите».</li>
+                  <li><strong>Секретарь</strong> → перейти в скрипт секретаря, ветка «Имя ЛПР неизвестно».</li>
+                </ul>
+                <a class="goto" href="#detect">Смотреть таблицу определения ↓</a>
+              </div>
+            </details>
+
+            <details>
+              <summary>«Кто вы?» / «А по какому вопросу?»</summary>
+              <div class="details-body">
+                <p>Секретарь или фильтр. Перейти в ветку «Имя ЛПР неизвестно».</p>
+                <a class="goto" href="op.html#unknown-name">Открыть скрипт секретаря →</a>
+              </div>
+            </details>
+          </div>
+        </section>
+
+        <section class="section" id="detect">
+          <div class="section-header">
+            <h2>Как определить, с кем говорим</h2>
+            <span class="tag">таблица</span>
+          </div>
+          <div class="section-body">
+            <table class="decision-table">
+              <thead>
+                <tr>
+                  <th>Признак</th>
+                  <th>Вероятно, секретарь или ОП</th>
+                  <th>Вероятно, ЛПР</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Тон ответа</strong></td>
+                  <td>Формальный, фильтрующий</td>
+                  <td>Деловой, прямой</td>
+                </tr>
+                <tr>
+                  <td><strong>Первая реакция</strong></td>
+                  <td>«А по какому вопросу?», «Что хотите?»</td>
+                  <td>«Да, слушаю», «Говорите»</td>
+                </tr>
+                <tr>
+                  <td><strong>Готовность слушать</strong></td>
+                  <td>Требует объяснить причину</td>
+                  <td>Готов выслушать суть</td>
+                </tr>
+                <tr>
+                  <td><strong>Полномочия</strong></td>
+                  <td>Не принимает решения по управлению</td>
+                  <td>Отвечает за площадки и операционку</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="section" id="fork">
+          <div class="section-header">
+            <h2>Развилка</h2>
+            <span class="tag">куда идти дальше</span>
+          </div>
+          <div class="section-body">
+            <div class="branch-grid">
+              <div class="branch-card">
+                <h3>Фильтр, секретарь, ОП, помощник</h3>
+                <p>Переходите в отдельный сценарий для секретаря или менеджера.</p>
+                <a class="goto" href="op.html">Открыть op.html →</a>
+              </div>
+              <div class="branch-card">
+                <h3>ЛПР: управляющий, техдиректор, собственник</h3>
+                <p>Переходите в сценарий разговора с лицом, принимающим решение.</p>
+                <a class="goto" href="lpr.html">Открыть lpr.html →</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="rule">
+          <div class="section-header">
+            <h2>Главное правило всего скрипта</h2>
+            <span class="tag">формула</span>
+          </div>
+          <div class="section-body">
+            <div class="formula">
+              <div class="step">Коротко обозначил контекст</div>
+              <div class="step">Задал вопрос</div>
+              <div class="step">Услышал ответ</div>
+              <div class="step">Повёл в следующий шаг</div>
+            </div>
+          </div>
+        </section>
+
+        <div class="footer-note">ROC · интерактивная HTML-версия скрипта для GitHub Pages</div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const copyButtons = document.querySelectorAll('.copy-btn');
+    copyButtons.forEach((button) => {
+      button.addEventListener('click', async () => {
+        const line = button.parentElement.cloneNode(true);
+        line.querySelector('.copy-btn')?.remove();
+        const text = line.textContent.trim();
+        try {
+          await navigator.clipboard.writeText(text);
+          const oldText = button.textContent;
+          button.textContent = 'готово';
+          setTimeout(() => { button.textContent = oldText; }, 1200);
+        } catch (error) {
+          button.textContent = 'не скопировано';
+        }
+      });
+    });
+
+    const sections = [...document.querySelectorAll('.section[id]')];
+    const navLinks = [...document.querySelectorAll('.nav-block:nth-of-type(2) .nav-link')];
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        navLinks.forEach((link) => link.classList.toggle('active', link.getAttribute('href') === `#${entry.target.id}`));
+      });
+    }, { rootMargin: '-25% 0px -65% 0px', threshold: 0.01 });
+
+    sections.forEach((section) => observer.observe(section));
+  </script>
+</body>
+</html>
