@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ROC · Скрипт ЛПР</title>
+  <style>
+    :root {
+      --bg: #f7f7f8;
+      --paper: #ffffff;
+      --text: #18181b;
+      --muted: #71717a;
+      --line: #e4e4e7;
+      --accent: #f97316;
+      --accent-soft: #fff1e8;
+      --accent-strong: #c2410c;
+      --dark: #27272a;
+      --green: #16a34a;
+      --blue: #2563eb;
+      --shadow: 0 18px 60px rgba(24, 24, 27, 0.08);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(249, 115, 22, 0.14), transparent 32rem),
+        linear-gradient(180deg, #fff 0%, var(--bg) 28rem);
+      line-height: 1.55;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 310px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 22px;
+      border-right: 1px solid var(--line);
+      background: rgba(255,255,255,0.84);
+      backdrop-filter: blur(16px);
+      overflow: auto;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+    .logo {
+      width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center;
+      color: #fff; background: linear-gradient(135deg, var(--accent), #fb923c);
+      font-weight: 900; letter-spacing: -0.04em; box-shadow: 0 10px 26px rgba(249,115,22,0.26);
+    }
+    .brand-title { font-weight: 850; letter-spacing: -0.035em; }
+    .brand-subtitle { color: var(--muted); font-size: 13px; margin-top: -2px; }
+
+    .nav-block { margin: 18px 0 24px; }
+    .nav-label { font-size: 12px; font-weight: 900; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin: 0 0 10px; }
+    .nav-link {
+      display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 13px;
+      color: #3f3f46; font-weight: 750; transition: .18s ease;
+    }
+    .nav-link:hover, .nav-link.active { background: var(--accent-soft); color: var(--accent-strong); }
+    .nav-link span { width: 24px; color: var(--accent); font-weight: 900; }
+
+    .hero { padding: 56px min(6vw, 78px) 24px; }
+    .hero-card {
+      position: relative; overflow: hidden; padding: 36px; border-radius: 32px;
+      background: var(--dark); color: white; box-shadow: var(--shadow);
+    }
+    .hero-card:after {
+      content: ""; position: absolute; width: 420px; height: 420px; right: -170px; top: -190px;
+      border-radius: 999px; background: rgba(249,115,22,.35); filter: blur(6px);
+    }
+    .kicker {
+      position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 12px; border-radius: 999px; background: rgba(255,255,255,.11);
+      border: 1px solid rgba(255,255,255,.14); color: #fed7aa; font-weight: 800; font-size: 13px; margin-bottom: 18px;
+    }
+    h1, h2, h3 { letter-spacing: -0.045em; line-height: 1.12; }
+    h1 { position: relative; z-index: 1; font-size: clamp(34px, 4.6vw, 68px); margin: 0 0 16px; max-width: 950px; }
+    .hero p { position: relative; z-index: 1; color: #d4d4d8; max-width: 860px; font-size: 18px; margin: 0; }
+
+    .quick-actions { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 16px; border-radius: 14px; font-weight: 800; border: 1px solid transparent; transition: .18s ease; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { transform: translateY(-1px); background: #ea580c; }
+    .btn-secondary { color: white; border-color: rgba(255,255,255,.18); background: rgba(255,255,255,.08); }
+    .btn-secondary:hover { background: rgba(255,255,255,.13); }
+
+    .content { padding: 0 min(6vw, 78px) 72px; display: grid; gap: 22px; }
+    .section { background: rgba(255,255,255,.92); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; scroll-margin-top: 18px; }
+    .section-header { padding: 24px 28px; border-bottom: 1px solid var(--line); display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+    .section h2 { margin: 0; font-size: clamp(24px, 3vw, 36px); }
+    .section h3 { margin: 0 0 12px; font-size: 22px; }
+    .section-body { padding: 24px 28px 28px; }
+
+    .tag { display: inline-flex; align-items: center; padding: 6px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-strong); font-weight: 850; font-size: 12px; white-space: nowrap; }
+    .meta-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .meta-card { padding: 18px; border-radius: 18px; border: 1px solid var(--line); background: #fff; }
+    .meta-card strong { display: block; margin-bottom: 6px; color: var(--accent-strong); }
+
+    .script-line { position: relative; margin: 12px 0; padding: 16px 48px 16px 18px; border-radius: 16px; background: #fafafa; border: 1px solid var(--line); font-style: italic; }
+    .script-line p { margin: 0 0 10px; }
+    .script-line p:last-child { margin-bottom: 0; }
+    .copy-btn { position: absolute; top: 10px; right: 10px; border-radius: 10px; padding: 7px 9px; background: #fff; color: var(--muted); cursor: pointer; border: 1px solid var(--line); font-size: 12px; }
+    .copy-btn:hover { color: var(--accent-strong); background: var(--accent-soft); }
+
+    .branch-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .branch-card { padding: 18px; border-radius: 18px; border: 1px solid var(--line); background: #fff; }
+    .answer { padding: 14px; border-radius: 14px; border: 1px dashed #fdba74; background: var(--accent-soft); margin: 10px 0; }
+    .answer-title { display: block; font-weight: 900; color: var(--accent-strong); margin-bottom: 8px; }
+    .mini-title { font-size: 14px; font-weight: 900; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin: 22px 0 10px; }
+    .checklist { margin: 0; padding-left: 20px; }
+    .checklist li { margin: 8px 0; }
+    .ordered { counter-reset: step; list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+    .ordered li { counter-increment: step; position: relative; padding: 12px 14px 12px 46px; border-radius: 14px; background: #fff; border: 1px solid var(--line); }
+    .ordered li:before { content: counter(step); position: absolute; left: 14px; top: 12px; width: 22px; height: 22px; border-radius: 8px; background: var(--accent); color: white; display: grid; place-items: center; font-size: 12px; font-weight: 900; }
+    .note { padding: 16px 18px; border-radius: 18px; border: 1px solid #fed7aa; background: #fff7ed; color: #7c2d12; font-weight: 750; }
+    .divider { height: 1px; background: var(--line); margin: 22px 0; }
+    .pill-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    .pill { padding: 8px 11px; border-radius: 999px; border: 1px solid var(--line); background: #fff; font-weight: 750; color: #3f3f46; }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      .nav-block { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+      .nav-label { grid-column: 1 / -1; }
+      .hero { padding: 28px 18px 18px; }
+      .content { padding: 0 18px 42px; }
+      .branch-grid, .meta-grid { grid-template-columns: 1fr; }
+      .hero-card { padding: 26px; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      .layout { display: block; }
+      .sidebar, .quick-actions, .copy-btn { display: none; }
+      .hero, .content { padding: 0; }
+      .hero-card { color: #111; background: #fff; box-shadow: none; border-radius: 0; }
+      .hero-card:after { display: none; }
+      .hero p { color: #333; }
+      .section { box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">R</div>
+        <div>
+          <div class="brand-title">ROC Scripts</div>
+          <div class="brand-subtitle">Холодные звонки</div>
+        </div>
+      </div>
+
+      <div class="nav-block">
+        <p class="nav-label">Страницы</p>
+        <a class="nav-link" href="index.html"><span>01</span> Общий скрипт</a>
+        <a class="nav-link" href="op.html"><span>02</span> Секретарь / менеджер</a>
+        <a class="nav-link active" href="lpr.html"><span>03</span> ЛПР</a>
+      </div>
+
+      <div class="nav-block">
+        <p class="nav-label">Навигация</p>
+        <a class="nav-link" href="#start"><span>→</span> Стартовые сценарии</a>
+        <a class="nav-link" href="#intro"><span>?</span> Кто вы / суть</a>
+        <a class="nav-link" href="#pain"><span>✓</span> Есть потребность</a>
+        <a class="nav-link" href="#objections"><span>!</span> Возражения</a>
+        <a class="nav-link" href="#demo"><span>▶</span> Показ продукта</a>
+        <a class="nav-link" href="#close"><span>⌁</span> Закрытие</a>
+        <a class="nav-link" href="#fix"><span>•</span> Что фиксировать</a>
+        <a class="nav-link" href="#phrases"><span>★</span> Ключевые фразы</a>
+      </div>
+    </aside>
+
+    <main>
+      <section class="hero">
+        <div class="hero-card">
+          <div class="kicker">Скрипт разговора с ЛПР</div>
+          <h1>Довести разговор до конкретной даты и времени презентации</h1>
+          <p>Страница для ситуации, когда вы уже говорите с лицом, принимающим решение: собственником, управляющим, техническим директором или руководителем операционной работы площадки.</p>
+          <div class="quick-actions">
+            <a class="btn btn-primary" href="#start">Начать со старта</a>
+            <a class="btn btn-secondary" href="#objections">Открыть возражения</a>
+            <a class="btn btn-secondary" href="#close">Закрытие на встречу</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="content">
+        <article class="section" id="goal">
+          <div class="section-header">
+            <h2>Цель и правило</h2>
+            <span class="tag">перед звонком</span>
+          </div>
+          <div class="section-body">
+            <div class="meta-grid">
+              <div class="meta-card"><strong>Цель</strong>Запланировать презентацию продукта с руководителем отдела продаж на конкретные дату и время.</div>
+              <div class="meta-card"><strong>Правило</strong>Не читать презентацию. Коротко, спокойно, без заискивания. Рабочий вопрос, а не продажа.</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="section" id="start">
+          <div class="section-header">
+            <h2>Стартовые сценарии</h2>
+            <span class="tag">выбор входа</span>
+          </div>
+          <div class="section-body branch-grid">
+            <div class="branch-card">
+              <h3>Старт А: ЛПР подтвердил, что это он</h3>
+              <div class="script-line"><button class="copy-btn">Копировать</button>Добрый день. Это Ярослав, компания ROC. Я изучил информацию о вашей компании и понимаю, что вы отвечаете за операционную работу площадок. Не отвлекаю?</div>
+            </div>
+            <div class="branch-card">
+              <h3>Старт Б: перевели от секретаря</h3>
+              <div class="script-line"><button class="copy-btn">Копировать</button>Добрый день, [Имя Отчество]. Это Ярослав, компания ROC. Мне дали ваш контакт как человека, который отвечает за операционную работу площадок. Не отвлекаю?</div>
+            </div>
+            <div class="branch-card">
+              <h3>Старт В: «Да, говорите»</h3>
+              <div class="script-line"><button class="copy-btn">Копировать</button><p>Смотрите, коротко. Мы работаем с майнинг-хостингами и видим картину: при росте оборудования операционные процессы, смены, биллинг начинают жить в разных системах и таблицах.</p><p>Хочу понять: у вас сейчас это собрано в единую систему или часть информации приходится собирать из разных источников?</p></div>
+            </div>
+            <div class="branch-card">
+              <h3>Логика старта</h3>
+              <ol class="ordered">
+                <li>Коротко обозначить контекст.</li>
+                <li>Не презентовать весь продукт.</li>
+                <li>Сразу задать вопрос по текущей организации процессов.</li>
+              </ol>
+            </div>
+          </div>
+        </article>
+
+        <article class="section" id="intro">
+          <div class="section-header">
+            <h2>Если спрашивают, кто вы и в чём суть</h2>
+            <span class="tag">короткое объяснение</span>
+          </div>
+          <div class="section-body">
+            <div class="branch-grid">
+              <div class="branch-card">
+                <h3>«Кто вы?»</h3>
+                <div class="script-line"><button class="copy-btn">Копировать</button><p>[Имя], компания ROC. Разработали систему, которая объединяет операционное управление хостингом в единый интерфейс: площадки, оборудование, смены, инциденты, биллинг и так далее.</p><p>Коротко хочу понять: у вас сейчас операционная картина по площадке прозрачна в моменте или что-то приходится собирать вручную из разных источников?</p></div>
+              </div>
+              <div class="branch-card">
+                <h3>«Одной фразой, в чём суть?»</h3>
+                <div class="script-line"><button class="copy-btn">Копировать</button><p>Суть простая: помогаем хостингам уйти от хаоса из таблиц, чатов и разрозненных программ. Даём единый интерфейс, где связаны оборудование, смены, инциденты и биллинг.</p><p>Интересно посмотреть, как это работает, или неактуально?</p></div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="section" id="pain">
+          <div class="section-header">
+            <h2>Когда ЛПР подтверждает потребность</h2>
+            <span class="tag">вести к показу</span>
+          </div>
+          <div class="section-body">
+            <div class="answer">
+              <span class="answer-title">«Да, есть такое / бывает / похоже на нас»</span>
+              <div class="script-line"><button class="copy-btn">Копировать</button><p>Да, это очень частая история.</p><p>Давайте спланируем короткий созвон с нашим руководителем. Он за 20 минут покажет, как ROC связывает в одной системе площадки, смены, оборудование и биллинг. Даже если сейчас терпимо, вы увидите, что меняется, когда всё в едином контуре. Первый месяц бесплатно.</p><p>Когда вам удобнее на этой неделе или на следующей?</p></div>
+            </div>
+            <div class="branch-grid">
+              <div class="branch-card">
+                <h3>«Терпимо»</h3>
+                <div class="script-line"><button class="copy-btn">Копировать</button><p>Понял. Обычно терпимость заканчивается, когда случается спор с клиентом из-за простоя или ошибки в счетах. Просто чтобы вы имели в виду такую систему на будущее.</p><p>Давайте спланируем короткий созвон с нашим руководителем. Он за 20 минут покажет, как ROC связывает в одной системе площадки, смены, оборудование и биллинг. Даже если сейчас терпимо, вы увидите, что меняется, когда всё в едином контуре. Первый месяц бесплатно.</p><p>Когда вам удобнее на этой неделе или на следующей?</p></div>
+              </div>
+              <div class="branch-card">
+                <h3>«Мешает»</h3>
+                <div class="script-line"><button class="copy-btn">Копировать</button><p>Тогда предлагаю посмотреть, как ROC это решает. Давайте спланируем короткий созвон с нашим руководителем. Он за 20 минут покажет, как ROC связывает в одной системе площадки, смены, оборудование и биллинг. Даже если сейчас терпимо, вы увидите, что меняется, когда всё в едином контуре. Первый месяц бесплатно.</p><p>Когда вам удобнее — на этой неделе или на следующей?</p></div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="section" id="objections">
+          <div class="section-header">
+            <h2>Возражения и короткие ответы</h2>
+            <span class="tag">не спорить</span>
+          </div>
+          <div class="section-body branch-grid">
+            <div class="branch-card">
+              <h3>«У нас всё нормально» / «Мы сами справляемся»</h3>
+              <div class="script-line"><button class="copy-btn">Копировать</button><p>Понял. Я не говорю, что у вас что-то сломано. Просто когда хостинг растёт, ручное управление начинает съедать время руководителя.</p><p>Скажите, а вы сейчас можете в реальном времени увидеть не просто статус ASIC'ов, а полную картину: кто на смене, какой инцидент в работе и как это повлияет на счёт клиенту?</p><p>Предлагаю посмотреть, как ROC оптимизирует процессы. Давайте спланируем короткий созвон с нашим руководителем. Он за 20 минут покажет, как ROC связывает в одной системе площадки, смены, оборудование и биллинг. Даже если сейчас терпимо, вы увидите, что меняется, когда всё в едином контуре. Первый месяц бесплатно.</p></div>
+            </div>
+            <div class="branch-card">
+              <h3>«Не интересно» / «Нам не нужно»</h3>
+              <div class="script-line"><button class="copy-btn">Копировать</button>Понял. Я сейчас не пытаюсь что-то продать. Просто предлагаю посмотреть, как ROC работает. Давайте спланируем короткий созвон с нашим руководителем. Он за 20 минут покажет, как ROC связывает в одной системе площадки, смены, оборудование и биллинг. Даже если сейчас терпимо, вы увидите, что меняется, когда всё в едином контуре. Первый месяц бесплатно.</div>
+            </div>
+            <div class="branch-card">
+              <h3>«Мы уже всё решили» / «У нас стоит другая система»</h3>
+              <div class="script-line"><button class="copy-btn">Копировать</button>Возможно. Я не про замену. Вопрос в другом: у вас площадки, смены, инциденты и биллинг живут в одной системе или это несколько разных инструментов, между которыми приходится переключаться?</div>
+            </div>
+            <div class="branch-card">
+              <h3>«Нет времени»</h3>
+              <div class="script-line"><button class="copy-btn">Копировать</button>Понял. Тогда давайте без длинного разговора. Когда лучше перезвонить, чтобы предметно обсудить?</div>
+            </div>
+            <div class="branch-card">
+              <h3>«Сейчас у меня минута»</h3>
+              <div class="script-line"><button class="copy-btn">Копировать</button>Тогда коротко. Мы даём хостингам единую систему, где связаны оборудование, смены, инциденты и биллинг. Это убирает ручной хаос и даёт руководителю полную картину. Если откликается, давайте выделим 20 минут на показ с моим руководителем. Когда удобнее?</div>
+            </div>
+            <div class="branch-card">
+              <h3>Спор или защита</h3>
+              <div class="script-line"><button class="copy-btn">Копировать</button>Понял вас. У меня нет цели что-то доказать или навязать. Я просто вижу по рынку, как много руководителей тратят время на сбор данных из разных мест. Если откликается — дайте знать.</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="section" id="demo">
+          <div class="section-header">
+            <h2>Минимальный интерес и предложение показа</h2>
+            <span class="tag">20 минут</span>
+          </div>
+          <div class="section-body">
+            <div class="script-line"><button class="copy-btn">Копировать</button><p>Давайте тогда спланируем короткий созвон с руководителем отдела продаж. Он за 20 минут покажет, как ROC связывает в одной системе площадки, смены, оборудование и биллинг. Даже если сейчас терпимо — вы увидите, что меняется, когда всё в едином контуре. Первый месяц бесплатно — попробуете на своих данных без риска.</p><p>Когда вам удобнее — на этой неделе или на следующей?</p></div>
+            <div class="divider"></div>
+            <h3>«А что именно покажете?»</h3>
+            <div class="script-line"><button class="copy-btn">Копировать</button><p>Три ключевых вещи:</p><p>1. Как в одном окне видеть всё: от статуса оборудования до того, кто сейчас на смене<br>2. Как система связывает инциденты с ответственными и клиентами<br>3. Как на основе реальной операционной работы автоматически строится биллинг и отчётность</p><p>Это займёт 20 минут. Когда вам удобнее — на этой неделе или на следующей?</p></div>
+          </div>
+        </article>
+
+        <article class="section" id="close">
+          <div class="section-header">
+            <h2>Закрытие на дату и время</h2>
+            <span class="tag">фиксируем следующий шаг</span>
+          </div>
+          <div class="section-body">
+            <div class="script-line"><button class="copy-btn">Копировать</button>Давайте зафиксируем. Вам удобнее в [день недели] или [день недели]? В первой половине дня или во второй?</div>
+            <div class="branch-grid">
+              <div class="branch-card">
+                <h3>Называете конкретное время</h3>
+                <div class="script-line"><button class="copy-btn">Копировать</button>Тогда [день недели], [дата], в [время]. Я пришлю приглашение.</div>
+              </div>
+              <div class="branch-card">
+                <h3>Фиксация</h3>
+                <ul class="checklist">
+                  <li>Дата и время зафиксированы</li>
+                  <li>Отправлено приглашение</li>
+                  <li>За час до встречи — напоминание</li>
+                </ul>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="branch-grid">
+              <div class="branch-card">
+                <h3>«Скинь сначала»</h3>
+                <div class="script-line"><button class="copy-btn">Копировать</button><p>Да, отправлю. Это будет краткая презентация о том, как ROC связывает управление площадкой, сменами и финансами.</p><p>Куда отправить?</p><p>И чтобы это не повисло — давайте сразу зафиксируем время для созвона. Я наберу в [день], в [время] — узнать ваше мнение и ответить на вопросы. Идёт?</p></div>
+              </div>
+              <div class="branch-card">
+                <h3>«Пришлите, если заинтересует — вернусь»</h3>
+                <div class="script-line"><button class="copy-btn">Копировать</button>Отправлю. Но чтобы не терять время — давайте я наберу в [день], вы скажете: интересно или нет. Это займёт минуту. Договорились?</div>
+              </div>
+              <div class="branch-card">
+                <h3>«Перезвоните позже»</h3>
+                <div class="script-line"><button class="copy-btn">Копировать</button>Хорошо. Когда лучше набрать, чтобы нормально и по делу поговорить?</div>
+              </div>
+              <div class="branch-card">
+                <h3>«И что вы от меня хотите?»</h3>
+                <div class="script-line"><button class="copy-btn">Копировать</button>Если тема актуальна — показать на примере, как это работает, с участием моего руководителя. Вы сами решите, есть смысл или нет. Если неактуально — не будем тратить время. Давайте спланируем короткий созвон с нашим руководителем. Он за 20 минут покажет, как ROC связывает в одной системе площадки, смены, оборудование и биллинг. Даже если сейчас терпимо, вы увидите, что меняется, когда всё в едином контуре. Первый месяц бесплатно.</div>
+              </div>
+              <div class="branch-card">
+                <h3>«Мы сами это контролируем»</h3>
+                <div class="script-line"><button class="copy-btn">Копировать</button><p>Хорошо. Тогда вопрос только один: у вас это реально видно в реальном времени как единая картина или часть информации всё равно приходится собирать из разных источников?</p><p>Предлагаю просто посмотреть, как ROC может оптимизировать вашу работу. Давайте спланируем короткий созвон с нашим руководителем. Он за 20 минут покажет, как ROC связывает в одной системе площадки, смены, оборудование и биллинг. Даже если сейчас терпимо, вы увидите, что меняется, когда всё в едином контуре. Первый месяц бесплатно.</p></div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="section" id="fix">
+          <div class="section-header">
+            <h2>Что зафиксировать после разговора</h2>
+            <span class="tag">итоги звонка</span>
+          </div>
+          <div class="section-body">
+            <ul class="checklist">
+              <li>Есть ли боль или нет</li>
+              <li>Что именно болит: отсутствие единой картины, ручной сбор, разрозненные инструменты</li>
+              <li>Кто внутри отвечает за операционную работу</li>
+              <li>Есть ли текущий инструмент</li>
+              <li>Какой следующий шаг</li>
+              <li>Дата и время презентации с РОПом</li>
+              <li>Когда следующий контакт, если не договорились сразу</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="section" id="phrases">
+          <div class="section-header">
+            <h2>Ключевые фразы и главное правило</h2>
+            <span class="tag">шпаргалка</span>
+          </div>
+          <div class="section-body">
+            <div class="pill-row">
+              <span class="pill">Единая система вместо зоопарка инструментов</span>
+              <span class="pill">Операционная картина по площадке в реальном времени</span>
+              <span class="pill">Связать площадки, смены, инциденты и биллинг в один интерфейс</span>
+              <span class="pill">Убрать ручной сбор информации из разных источников</span>
+              <span class="pill">Я не про замену, а про единый пульт управления</span>
+              <span class="pill">Показать за 20 минут с руководителем отдела продаж</span>
+              <span class="pill">На этой неделе или на следующей?</span>
+            </div>
+            <div class="divider"></div>
+            <div class="note">Если ЛПР отвечает коротко — не начинать лекцию.</div>
+            <div class="mini-title">Формула разговора</div>
+            <ol class="ordered">
+              <li>Коротко обозначил контекст.</li>
+              <li>Задал вопрос.</li>
+              <li>Услышал ответ.</li>
+              <li>Повёл в следующий шаг.</li>
+            </ol>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    document.querySelectorAll('.copy-btn').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const block = button.parentElement.cloneNode(true);
+        const cloneButton = block.querySelector('.copy-btn');
+        if (cloneButton) cloneButton.remove();
+        const text = block.innerText.trim().replace(/\n{3,}/g, '\n\n');
+        try {
+          await navigator.clipboard.writeText(text);
+          const previous = button.textContent;
+          button.textContent = 'Готово';
+          setTimeout(() => button.textContent = previous, 1100);
+        } catch (error) {
+          button.textContent = 'Ошибка';
+          setTimeout(() => button.textContent = 'Копировать', 1100);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
