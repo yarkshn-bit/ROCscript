@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ROC · База знаний о продукте</title>
+  <style>
+    :root {
+      --bg: #f7f7f8;
+      --paper: #ffffff;
+      --text: #18181b;
+      --muted: #71717a;
+      --line: #e4e4e7;
+      --accent: #f97316;
+      --accent-soft: #fff1e8;
+      --accent-strong: #c2410c;
+      --dark: #27272a;
+      --green: #16a34a;
+      --shadow: 0 18px 60px rgba(24, 24, 27, 0.08);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(249, 115, 22, 0.14), transparent 32rem),
+        linear-gradient(180deg, #fff 0%, var(--bg) 28rem);
+      line-height: 1.6;
+    }
+    a { color: inherit; text-decoration: none; }
+    .layout { display: grid; grid-template-columns: 310px minmax(0, 1fr); min-height: 100vh; }
+    .sidebar {
+      position: sticky; top: 0; height: 100vh; padding: 22px;
+      border-right: 1px solid var(--line);
+      background: rgba(255,255,255,0.84);
+      backdrop-filter: blur(16px);
+      overflow: auto;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+    .logo {
+      width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center;
+      color: #fff; background: linear-gradient(135deg, var(--accent), #fb923c);
+      font-weight: 900; letter-spacing: -0.04em; box-shadow: 0 10px 26px rgba(249,115,22,0.26);
+    }
+    .brand-title { font-weight: 850; letter-spacing: -0.035em; }
+    .brand-subtitle { color: var(--muted); font-size: 13px; margin-top: -2px; }
+    .nav-block { padding: 14px; border: 1px solid var(--line); border-radius: 18px; background: #fff; margin-bottom: 14px; }
+    .nav-label { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 800; margin-bottom: 10px; }
+    .nav-link {
+      display: flex; align-items: flex-start; gap: 9px; padding: 9px 10px; border-radius: 12px;
+      color: #3f3f46; font-size: 14px; transition: .18s ease;
+    }
+    .nav-link:hover, .nav-link.active { background: var(--accent-soft); color: var(--accent-strong); }
+    .nav-link span:first-child { color: var(--accent); font-weight: 900; min-width: 24px; }
+    .main { min-width: 0; }
+    .hero { padding: 48px min(6vw, 78px) 28px; }
+    .hero-card {
+      position: relative; overflow: hidden; padding: 36px; border-radius: 32px;
+      background: var(--dark); color: white; box-shadow: var(--shadow);
+    }
+    .hero-card:after {
+      content: ""; position: absolute; width: 420px; height: 420px; right: -170px; top: -190px;
+      border-radius: 999px; background: rgba(249,115,22,.35); filter: blur(6px);
+    }
+    .kicker {
+      display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px;
+      background: rgba(255,255,255,.11); border: 1px solid rgba(255,255,255,.14);
+      color: #fed7aa; font-weight: 800; font-size: 13px; margin-bottom: 18px;
+    }
+    h1, h2, h3 { letter-spacing: -0.045em; line-height: 1.12; }
+    h1 { position: relative; z-index: 1; font-size: clamp(34px, 4.6vw, 68px); margin: 0 0 16px; max-width: 980px; }
+    .hero p { position: relative; z-index: 1; color: #d4d4d8; max-width: 860px; font-size: 18px; margin: 0; }
+    .quick-actions { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 16px;
+      border-radius: 14px; font-weight: 800; border: 1px solid transparent; transition: .18s ease;
+    }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { transform: translateY(-1px); background: #ea580c; }
+    .btn-secondary { color: white; border-color: rgba(255,255,255,.18); background: rgba(255,255,255,.08); }
+    .btn-secondary:hover { background: rgba(255,255,255,.13); }
+    .content { padding: 0 min(6vw, 78px) 72px; display: grid; gap: 22px; }
+    .section {
+      background: rgba(255,255,255,.92); border: 1px solid var(--line); border-radius: var(--radius);
+      box-shadow: var(--shadow); overflow: hidden; scroll-margin-top: 18px;
+    }
+    .section-header {
+      padding: 24px 28px; border-bottom: 1px solid var(--line); display: flex;
+      align-items: flex-start; justify-content: space-between; gap: 18px;
+    }
+    .section h2 { margin: 0; font-size: clamp(24px, 3vw, 36px); }
+    .section h3 { margin: 26px 0 12px; font-size: 22px; }
+    .section-body { padding: 24px 28px 28px; }
+    .section-body p { color: #3f3f46; margin: 0 0 14px; }
+    .lead-text {
+      padding: 16px 18px; border-radius: 18px; background: var(--accent-soft);
+      border: 1px dashed #fdba74; color: #27272a !important; font-weight: 700;
+    }
+    .note-list { margin: 0 0 14px; padding-left: 0; list-style: none; display: grid; gap: 10px; }
+    .note-list li {
+      display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px;
+      background: #fafafa; border: 1px solid var(--line);
+    }
+    .check { color: var(--accent); font-weight: 950; }
+    .number-list { counter-reset: step; list-style: none; padding: 0; display: grid; gap: 10px; margin: 14px 0; }
+    .number-list li {
+      counter-increment: step; position: relative; padding: 14px 14px 14px 52px; border-radius: 14px;
+      background: #fafafa; border: 1px solid var(--line);
+    }
+    .number-list li:before {
+      content: counter(step); display: inline-grid; place-items: center; width: 25px; height: 25px;
+      position: absolute; left: 14px; top: 13px; border-radius: 999px; background: var(--accent); color: #fff;
+      font-size: 13px; font-weight: 900;
+    }
+    .tag {
+      display: inline-flex; align-items: center; padding: 6px 10px; border-radius: 999px;
+      background: var(--accent-soft); color: var(--accent-strong); font-weight: 850; font-size: 12px; white-space: nowrap;
+    }
+    mark { background: #ffedd5; color: #9a3412; border-radius: 8px; padding: 1px 5px; }
+    .inline-link { color: var(--accent-strong); font-weight: 800; border-bottom: 1px solid #fdba74; }
+    .subhead { scroll-margin-top: 20px; color: #27272a; }
+    .table-wrap { overflow: auto; border-radius: 18px; margin: 16px 0; }
+    .decision-table { width: 100%; border-collapse: collapse; border: 1px solid var(--line); background: #fff; }
+    .decision-table th, .decision-table td {
+      padding: 15px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top;
+    }
+    .decision-table th {
+      background: #fafafa; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em;
+    }
+    .decision-table tr:last-child td { border-bottom: 0; }
+    .flow-arrow { color: var(--accent); font-weight: 950; text-align: center; font-size: 26px; margin: -2px 0 10px; }
+    .copyable {
+      position: relative; padding: 16px 48px 16px 18px; border-radius: 16px; background: #fafafa;
+      border: 1px solid var(--line);
+    }
+    .copyable:after {
+      content: "ключевая формулировка"; display: inline-block; margin-left: 8px; font-size: 12px;
+      color: var(--accent-strong); background: var(--accent-soft); border-radius: 999px; padding: 3px 8px;
+    }
+    .footer-note { color: var(--muted); font-size: 13px; text-align: center; padding: 10px 0 0; }
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: relative; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      .hero, .content { padding-left: 18px; padding-right: 18px; }
+      .hero-card { padding: 26px; }
+      .section-header, .section-body { padding-left: 20px; padding-right: 20px; }
+    }
+</style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">R</div>
+        <div>
+          <div class="brand-title">ROC Scripts</div>
+          <div class="brand-subtitle">База знаний о продукте</div>
+        </div>
+      </div>
+
+      <div class="nav-block">
+        <div class="nav-label">Страницы</div>
+        <a class="nav-link" href="index.html"><span>→</span> Скрипт общий</a>
+        <a class="nav-link" href="op.html"><span>→</span> Секретарь / менеджер</a>
+        <a class="nav-link" href="lpr.html"><span>→</span> ЛПР</a>
+        <a class="nav-link active" href="knowledge.html"><span>●</span> База знаний</a>
+      </div>
+
+      <div class="nav-block">
+        <div class="nav-label">Оглавление</div>
+        <a class="nav-link" href="#что-такое-roc"><span>01</span> 1. Что такое ROC</a>
+<a class="nav-link" href="#как-объяснить-roc-в-одном-предложении-за-30-секунд-и-подробно"><span>02</span> 2. Как объяснить ROC в одном предложении, за 30 секунд и подробно</a>
+<a class="nav-link" href="#для-кого-нужен-roc"><span>03</span> 3. Для кого нужен ROC</a>
+<a class="nav-link" href="#какие-проблемы-клиента-решает-roc"><span>04</span> 4. Какие проблемы клиента решает ROC</a>
+<a class="nav-link" href="#чем-roc-отличается-от-обычного-мониторинга-saas-и-crm"><span>05</span> 5. Чем ROC отличается от обычного мониторинга, SaaS и CRM</a>
+<a class="nav-link" href="#основные-блоки-и-функции-roc"><span>06</span> 6. Основные блоки и функции ROC</a>
+<a class="nav-link" href="#дашборд"><span>07</span> 7. Дашборд</a>
+<a class="nav-link" href="#инфраструктура-и-создание-площадок"><span>08</span> 8. Инфраструктура и создание площадок</a>
+<a class="nav-link" href="#подключение-агента-и-связь-площадки-с-системой"><span>09</span> 9. Подключение агента и связь площадки с системой</a>
+<a class="nav-link" href="#пользователи-роли-и-доступы"><span>10</span> 10. Пользователи, роли и доступы</a>
+<a class="nav-link" href="#график-смен-и-выход-оператора-на-смену"><span>11</span> 11. График смен и выход оператора на смену</a>
+<a class="nav-link" href="#мониторинг-оборудования"><span>12</span> 12. Мониторинг оборудования</a>
+<a class="nav-link" href="#инциденты-и-контроль-реакции"><span>13</span> 13. Инциденты и контроль реакции</a>
+<a class="nav-link" href="#история-действий-сотрудников-и-событий"><span>14</span> 14. История действий сотрудников и событий</a>
+<a class="nav-link" href="#учёт-asic-и-реестр-оборудования"><span>15</span> 15. Учёт ASIC и реестр оборудования</a>
+<a class="nav-link" href="#привязка-оборудования-к-клиенту-и-истории-перемещений"><span>16</span> 16. Привязка оборудования к клиенту и истории перемещений</a>
+<a class="nav-link" href="#подсети-техническая-инфраструктура-и-рабочая-среда"><span>17</span> 17. Подсети, техническая инфраструктура и рабочая среда</a>
+<a class="nav-link" href="#биллинг"><span>18</span> 18. Биллинг</a>
+<a class="nav-link" href="#тарифы"><span>19</span> 19. Тарифы</a>
+<a class="nav-link" href="#выставление-счетов"><span>20</span> 20. Выставление счетов</a>
+<a class="nav-link" href="#отчётность"><span>21</span> 21. Отчётность</a>
+<a class="nav-link" href="#как-все-функции-roc-связаны-между-собой"><span>22</span> 22. Как все функции ROC связаны между собой</a>
+<a class="nav-link" href="#что-получает-хостинг-от-roc"><span>23</span> 23. Что получает хостинг от ROC</a>
+<a class="nav-link" href="#как-правильно-говорить-о-roc-по-телефону"><span>24</span> 24. Как правильно говорить о ROC по телефону</a>
+<a class="nav-link" href="#как-отвечать-на-вопрос-что-у-вас-есть"><span>25</span> 25. Как отвечать на вопрос “что у вас есть?”</a>
+<a class="nav-link" href="#частые-вопросы-и-готовые-ответы-для-нового-сотрудника"><span>26</span> 26. Частые вопросы и готовые ответы для нового сотрудника</a>
+<a class="nav-link" href="#что-новый-сотрудник-должен-запомнить-в-первую-очередь"><span>27</span> 27. Что новый сотрудник должен запомнить в первую очередь</a>
+<a class="nav-link" href="#готовый-текст-для-объяснения-roc-новому-клиенту"><span>28</span> 28. Готовый текст для объяснения ROC новому клиенту</a>
+<a class="nav-link" href="#итог"><span>29</span> 29. Итог</a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="hero">
+        <div class="hero-card">
+          <div class="kicker">Внутренний материал отдела продаж</div>
+          <h1>База знаний о продукте ROC</h1>
+          <p>Страница для быстрого обучения нового сотрудника: что такое ROC, кому нужен продукт, какие проблемы решает, из каких блоков состоит и как правильно объяснять ценность клиенту.</p>
+          <div class="quick-actions">
+            <a class="btn btn-primary" href="#что-такое-roc">Что такое ROC</a>
+            <a class="btn btn-secondary" href="#основные-блоки-и-функции-roc">Функции</a>
+            <a class="btn btn-secondary" href="#частые-вопросы-и-готовые-ответы-для-нового-сотрудника">FAQ</a>
+          </div>
+        </div>
+      </section>
+
+      <div class="content">
+        <p class="lead-text">Документ нужен для того, чтобы новый сотрудник быстро понял, что такое ROC, какие задачи он решает, для кого подходит, какие функции входят в систему</p>
+<p>и как правильно объяснять продукт клиенту в звонке и переписке.</p>
+<p class="lead-text">Внутренний материал компании</p>
+<section class="section" id="что-такое-roc"><div class="section-header"><h2>1. Что такое ROC</h2><span class="tag">раздел</span></div><div class="section-body">
+<p class="copyable">ROC - это система операционного управления для майнинг-хостингов. Если объяснять простыми словами, ROC нужен для того, чтобы хостинг мог не просто наблюдать за оборудованием, а управлять всей ежедневной работой через одну систему.</p>
+<p>В ROC в одной логике связаны площадки, оборудование, сотрудники, роли, графики смен, мониторинг, инциденты, история действий, биллинг, тарифы, выставление счетов и отчётность. За счёт этого руководитель видит не отдельные куски информации, а целостную операционную картину.</p>
+<p>Главная идея продукта: ROC помогает перевести хостинг из модели, где многое держится на ручной работе и отдельных инструментах, в модель, где есть единая система управления и прозрачности.</p>
+</div></section>
+<section class="section" id="как-объяснить-roc-в-одном-предложении-за-30-секунд-и-подробно"><div class="section-header"><h2>2. Как объяснить ROC в одном предложении, за 30 секунд и подробно</h2><span class="tag">раздел</span></div><div class="section-body">
+<h3 id="коротко-roc---это-система-операционного-управления-майнинг-хостингом-которая-объединяет-в-одной-системе-оборудование-людей-процессы-и-финансовый-контур" class="subhead">Коротко: ROC - это система операционного управления майнинг-хостингом, которая объединяет в одной системе оборудование, людей, процессы и финансовый контур.</h3>
+<h3 id="за-30-секунд-roc---это-не-просто-мониторинг-это-система-которая-помогает-хостингу-вести-учёт-asic-контролировать-простои-и-инциденты-понимать-кто-сейчас-на-смене-фиксировать-действия-сотрудников-управлять-тарифами-и-счетами-и-строить-прозрачную-отчётность-по-клиентам-и-площадкам" class="subhead">За 30 секунд: ROC - это не просто мониторинг. Это система, которая помогает хостингу вести учёт ASIC, контролировать простои и инциденты, понимать, кто сейчас на смене, фиксировать действия сотрудников, управлять тарифами и счетами и строить прозрачную отчётность по клиентам и площадкам.</h3>
+<h3 id="подробно-roc-помогает-создать-цифровую-структуру-хостинга-подключить-площадки-выдать-роли-и-доступы-назначить-операторов-на-смены-видеть-состояние-оборудования-фиксировать-события-и-инциденты-вести-учёт-asic-и-строить-биллинг-и-отчётность-на-базе-реальной-операционной-работы-за-счёт-этого-хостинг-получает-больше-управляемости-меньше-потерь-и-более-зрелую-модель-работы-с-клиентским-оборудованием" class="subhead">Подробно: ROC помогает создать цифровую структуру хостинга, подключить площадки, выдать роли и доступы, назначить операторов на смены, видеть состояние оборудования, фиксировать события и инциденты, вести учёт ASIC и строить биллинг и отчётность на базе реальной операционной работы. За счёт этого хостинг получает больше управляемости, меньше потерь и более зрелую модель работы с клиентским оборудованием.</h3>
+</div></section>
+<section class="section" id="для-кого-нужен-roc"><div class="section-header"><h2>3. Для кого нужен ROC</h2><span class="tag">раздел</span></div><div class="section-body">
+<p>ROC нужен прежде всего тем, кто отвечает за работу майнинг-хостинга и несёт ответственность перед клиентами и за внутреннюю операционную модель.</p>
+<ul class="note-list">
+<li><span class="check">✓</span><span>Собственники майнинг-хостингов</span></li>
+<li><span class="check">✓</span><span>Управляющие площадками</span></li>
+<li><span class="check">✓</span><span>Операционные руководители</span></li>
+<li><span class="check">✓</span><span>Технические руководители</span></li>
+<li><span class="check">✓</span><span>Руководители смен или старшие операторы</span></li>
+<li><span class="check">✓</span><span>Хостинги с клиентским размещением оборудования</span></li>
+<li><span class="check">✓</span><span>Площадки, у которых уже есть заметный объём техники и сотрудников</span></li>
+</ul>
+<p><mark>Особенно ROC актуален, когда у хостинга уже около 500 ASIC и выше, есть клиентские обязательства, работа посменно, споры по простоям, потребность в более точном учёте и финансовой прозрачности.</mark></p>
+</div></section>
+<section class="section" id="какие-проблемы-клиента-решает-roc"><div class="section-header"><h2>4. Какие проблемы клиента решает ROC</h2><span class="tag">раздел</span></div><div class="section-body">
+<h3 id="нет-единой-управляемости" class="subhead">4.1. Нет единой управляемости</h3>
+<p>Во многих хостингах часть информации живёт в таблицах, часть в чатах, часть в голове команды. Из-за этого собственнику и руководителю трудно быстро понять, где находится оборудование, кто отвечает за конкретный участок, что уже сделано и как развивается ситуация по устройству или клиенту.</p>
+<p>Нет единого источника правды по оборудованию и площадкам</p>
+<p>Трудно восстановить цепочку событий</p>
+<p>Ответственность между людьми размывается</p>
+<p>Руководителю приходится собирать картину вручную</p>
+<h3 id="простои-и-слабый-контроль-реакции" class="subhead">4.2. Простои и слабый контроль реакции</h3>
+<p>Любая задержка в реакции на проблему стоит денег. Если оборудование работает в большом количестве, а смены передают информацию не через систему, а вручную, часть проблем замечается поздно или отрабатывается дольше, чем нужно.</p>
+<p>Позднее обнаружение отклонений</p>
+<p>Не всегда понятно, кто должен реагировать</p>
+<p>Нельзя быстро доказать, что именно делалось по проблеме</p>
+<p>Растут потери, недовольство клиента и давление на команду</p>
+<h3 id="разрозненные-процессы" class="subhead">4.3. Разрозненные процессы</h3>
+<p>Учёт оборудования, мониторинг, работа операторов, тарифы, счета и отчётность часто живут отдельно друг от друга. ROC нужен именно для того, чтобы собрать это в единую систему, где одно связано с другим.</p>
+<h3 id="слабая-прозрачность-для-клиента" class="subhead">4.4. Слабая прозрачность для клиента</h3>
+<p>Когда клиенту задают вопросы по его оборудованию, начислениям или простоям, хостинг должен отвечать не на уровне устных пояснений, а на уровне данных и истории. ROC делает эту модель взаимодействия сильнее и прозрачнее.</p>
+</div></section>
+<section class="section" id="чем-roc-отличается-от-обычного-мониторинга-saas-и-crm"><div class="section-header"><h2>5. Чем ROC отличается от обычного мониторинга, SaaS и CRM</h2><span class="tag">раздел</span></div><div class="section-body">
+<h3 id="roc-не-равен-мониторингу" class="subhead">5.1. ROC не равен мониторингу</h3>
+<p>Мониторинг показывает состояние оборудования: онлайн или офлайн, температуру, хешрейт, пулы и другие технические параметры. Но мониторинг сам по себе не отвечает на вопрос, кто сейчас на смене, кто должен отреагировать, как зафиксирован инцидент, как это связано с клиентом и как это отражается в отчётности.</p>
+<p>ROC использует мониторинг как источник данных, но идёт дальше. Он превращает данные в операционное действие: фиксирует событие, помогает назначить ответственного, отслеживает реакцию и связывает всё это с оборудованием, клиентом и площадкой.</p>
+<h3 id="roc-не-сводится-к-saas-модели" class="subhead">5.2. ROC не сводится к SaaS-модели</h3>
+<p>Обычный SaaS часто продаёт доступ к интерфейсу и набор функций. ROC для клиента ценен не только доступом к системе, а тем, что помогает выстроить управляемую операционную модель хостинга и сделать процессы прозрачнее.</p>
+<h3 id="roc-не-равен-crm" class="subhead">5.3. ROC не равен CRM</h3>
+<p>CRM работает с лидами, сделками и продажами. ROC работает с эксплуатацией: площадками, оборудованием, сотрудниками, сменами, инцидентами, биллингом и отчётностью.</p>
+</div></section>
+<section class="section" id="основные-блоки-и-функции-roc"><div class="section-header"><h2>6. Основные блоки и функции ROC</h2><span class="tag">раздел</span></div><div class="section-body">
+<p>Ниже перечислены основные модули ROC и логика, зачем каждый из них нужен клиенту. Для нового сотрудника отдела продаж важно понимать не только название раздела, но и его бизнес-смысл.</p>
+<div class="table-wrap"><table class="decision-table"><tbody>
+<tr><th><strong>Блок ROC</strong></th><th><strong>Что делает</strong></th><th><strong>Зачем это клиенту</strong></th></tr>
+<tr><td>Дашборд</td><td>Показывает общую картину по площадкам, оборудованию, статусам и событиям.</td><td>Руководитель быстро понимает, что происходит в хостинге и где есть отклонения.</td></tr>
+<tr><td>Инфраструктура</td><td>Создание хостингов, площадок, зон, мест, подсетей и структуры размещения.</td><td>Без структуры невозможно строить контроль, учёт и связанный операционный контур.</td></tr>
+<tr><td>Роли и доступы</td><td>Назначение ролей пользователям и ограничение доступа по зонам ответственности.</td><td>Каждый видит только то, что относится к его задаче. Это повышает порядок и безопасность.</td></tr>
+<tr><td>Смены и операторы</td><td>График смен, назначение сотрудников, фиксация выхода на смену.</td><td>Понятно, кто сейчас отвечает за площадку и кто был ответственным в момент события.</td></tr>
+<tr><td>Мониторинг</td><td>Состояние оборудования, статусы, температуры, хешрейт, проблемные устройства.</td><td>Даёт оперативную картину по технике и служит базой для дальнейшего управления.</td></tr>
+<tr><td>Инциденты</td><td>Фиксация проблем, приоритета, ответственного, истории действий, времени реакции.</td><td>Проблема становится управляемым объектом, а не просто сообщением.</td></tr>
+<tr><td>Учёт ASIC</td><td>Карточка устройства, клиент, площадка, статус, история и привязки.</td><td>Хостинг получает точный реестр оборудования и основу для прозрачной работы.</td></tr>
+<tr><td>Биллинг и тарифы</td><td>Начисления, тарифы, связка с клиентом и оборудованием.</td><td>Финансовая работа строится не отдельно, а на базе реальной операционной модели.</td></tr>
+<tr><td>Счета</td><td>Формирование счетов по тарифам и периодам.</td><td>Снижается объём ручной работы и вероятность ошибок.</td></tr>
+<tr><td>Отчётность</td><td>Отчёты по площадкам, клиентам, оборудованию, начислениям и событиям.</td><td>Повышается прозрачность для руководителя и клиентов.</td></tr>
+</tbody></table></div>
+</div></section>
+<section class="section" id="дашборд"><div class="section-header"><h2>7. Дашборд</h2><span class="tag">раздел</span></div><div class="section-body">
+<p><em>Дашборд - это точка входа в систему. Здесь собственник, управляющий или руководитель видит общую картину по хостингу.</em></p>
+<p>На практике ценность дашборда не в том, что он красиво выглядит, а в том, что он собирает в одной сводке то, что раньше приходилось запрашивать у разных людей.</p>
+<ul class="note-list">
+<li><span class="check">✓</span><span>Количество площадок и состояние каждой из них</span></li>
+<li><span class="check">✓</span><span>Количество устройств и их ключевые статусы</span></li>
+<li><span class="check">✓</span><span>Отклонения, события, проблемные зоны</span></li>
+<li><span class="check">✓</span><span>Общую операционную картину для руководителя</span></li>
+</ul>
+<p><mark>ВАЖНО:</mark></p>
+<p><mark>Когда сотрудник отдела продаж рассказывает про дашборд, он должен говорить не “у нас есть экран с цифрами”, а “у руководителя появляется единая точка контроля по операционной работе хостинга”.</mark></p>
+</div></section>
+<section class="section" id="инфраструктура-и-создание-площадок"><div class="section-header"><h2>8. Инфраструктура и создание площадок</h2><span class="tag">раздел</span></div><div class="section-body">
+<p>ROC начинается со структуры.</p>
+<p>В системе создаются хостинги, площадки и их внутренняя цифровая логика: зоны, места, подсети и другие сущности, на которых дальше строится управление.</p>
+<p>Это один из ключевых тезисов для продажи:</p>
+<p>сначала формируется объект управления, а уже потом на него накладываются все остальные процессы.</p>
+<ul class="note-list">
+<li><span class="check">✓</span><span>Создание хостинга и площадки</span></li>
+<li><span class="check">✓</span><span>Формирование структуры размещения</span></li>
+<li><span class="check">✓</span><span>Привязка подсетей и другой инфраструктурной логики</span></li>
+<li><span class="check">✓</span><span>Подготовка базы для учёта, мониторинга, инцидентов и биллинга</span></li>
+</ul>
+<p><mark>ВАЖНО:</mark></p>
+<p><mark>проговаривать клиенту: если в системе нет нормальной структуры площадки, дальше трудно прозрачно управлять оборудованием, людьми, начислениями и отчётностью.</mark></p>
+</div></section>
+<section class="section" id="подключение-агента-и-связь-площадки-с-системой"><div class="section-header"><h2>9. Подключение агента и связь площадки с системой</h2><span class="tag">раздел</span></div><div class="section-body">
+<p>После создания площадки её можно связать с ROC через агент.</p>
+<p>Именно после этого площадка превращается из просто карточки в цифровой объект, с которым начинают работать мониторинг, технические данные и остальной операционный контур.</p>
+<p>Для продаж здесь важен простой смысл: ROC не просто хранит информацию вручную. Он связывает локальную инфраструктуру площадки с системой управления.</p>
+</div></section>
+<section class="section" id="пользователи-роли-и-доступы"><div class="section-header"><h2>10. Пользователи, роли и доступы</h2><span class="tag">раздел</span></div><div class="section-body">
+<p>В ROC можно создавать пользователей и выдавать им роли.</p>
+<p>Это критично для хостинга, потому что разные участники процесса должны видеть разный уровень информации.</p>
+<ul class="note-list">
+<li><span class="check">✓</span><span>Собственник или руководитель видит полную картину или свои площадки</span></li>
+<li><span class="check">✓</span><span>Оператор получает рабочий интерфейс для своей смены и своих задач</span></li>
+<li><span class="check">✓</span><span>Клиент может видеть только своё оборудование и свои данные</span></li>
+<li><span class="check">✓</span><span>Администратор или технический сотрудник получает нужный уровень системного доступа</span></li>
+</ul>
+<p>Роли в ROC -  не просто техническая настройка, а часть операционной модели.</p>
+<p>Система помогает не только ограничить доступ, но и распределить ответственность по реальным зонам работы.</p>
+</div></section>
+<section class="section" id="график-смен-и-выход-оператора-на-смену"><div class="section-header"><h2>11. График смен и выход оператора на смену</h2><span class="tag">раздел</span></div><div class="section-body">
+<p>Это один из самых сильных блоков ROC, потому что он показывает, что продукт работает не только с техникой, но и с людьми.</p>
+<p>В системе можно выстраивать график смен, назначать операторов и фиксировать выход сотрудника на смену.</p>
+<p>Понятно, кто сейчас находится в операционном контуре и кто отвечал за площадку в конкретное время</p>
+<p>Инциденты можно связывать с реальной сменой и реальным ответственным</p>
+<p>Руководителю проще контролировать дисциплину и загрузку команды</p>
+<p>Этот блок особенно важен в разговоре с хостингами, где работа идёт круглосуточно.</p>
+<p>Частая проблема таких площадок - неясность, кто именно должен был реагировать и что происходило на смене. ROC помогает сделать это прозрачным.</p>
+</div></section>
+<section class="section" id="мониторинг-оборудования"><div class="section-header"><h2>12. Мониторинг оборудования</h2><span class="tag">раздел</span></div><div class="section-body">
+<p>Мониторинг в ROC показывает состояние оборудования: онлайн или офлайн, температуру, хэшрейт, пулы, доступность и другие технические параметры.</p>
+<p>Но продавать ROC как мониторинг нельзя, так как это лишь часть всего функционала сервиса.</p>
+<p>Правильная подача такая: ROC <strong>использует</strong> мониторинг как базу для управления.</p>
+<p>Руководитель и оператор видят проблемные устройства и участки</p>
+<p>Можно фильтровать оборудование по площадке, статусу, клиенту и другим признакам</p>
+<p>Технические данные становятся основой для реакции, инцидентов и контроля</p>
+<p>Смысл для клиента в том, что мониторинг перестаёт быть просто “экраном с показателями”. Он становится частью системы, где за техническими данными следует действие.</p>
+</div></section>
+<section class="section" id="инциденты-и-контроль-реакции"><div class="section-header"><h2>13. Инциденты и контроль реакции</h2><span class="tag">раздел</span></div><div class="section-body">
+<p>Если мониторинг показывает проблему, ROC позволяет превратить её в инцидент. Инцидент получает статус, приоритет, ответственного, время создания и историю действий:</p>
+<ul class="note-list">
+<li><span class="check">✓</span><span>когда проблема появилась</span></li>
+<li><span class="check">✓</span><span>кто взял её в работу</span></li>
+<li><span class="check">✓</span><span>что делалось по ней внутри системы</span></li>
+<li><span class="check">✓</span><span>когда она была закрыта и чем завершилась</span></li>
+</ul>
+<p>Для клиента это очень важный блок, потому что он убирает неуправляемость в работе с проблемами. Уже нельзя ответить общими словами. Есть факт события, есть цепочка действий, есть ответственность.</p>
+<p>Этот блок напрямую связан со SLA и с качеством сервиса, который хостинг оказывает своим клиентам.</p>
+</div></section>
+<section class="section" id="история-действий-сотрудников-и-событий"><div class="section-header"><h2>14. История действий сотрудников и событий</h2><span class="tag">раздел</span></div><div class="section-body">
+<p>ROC фиксирует действия внутри системы. Это нужно для того, чтобы руководитель мог восстановить картину и понять, кто, когда и что сделал. Такой подход уменьшает зависимость от устных пояснений и усиливает прозрачность.</p>
+<p>История действий полезна в спорных случаях, при внутреннем контроле, при анализе качества работы смен и при общении с клиентом, когда нужно показать не мнение, а фактическую историю.</p>
+</div></section>
+<section class="section" id="учёт-asic-и-реестр-оборудования"><div class="section-header"><h2>15. Учёт ASIC и реестр оборудования</h2><span class="tag">раздел</span></div><div class="section-body">
+<p>В ROC есть реестр оборудования. По каждому ASIC можно видеть:</p>
+<ul class="note-list">
+<li><span class="check">✓</span><span>модель</span></li>
+<li><span class="check">✓</span><span>статус</span></li>
+<li><span class="check">✓</span><span>площадку</span></li>
+<li><span class="check">✓</span><span>место размещения</span></li>
+<li><span class="check">✓</span><span>клиента</span></li>
+<li><span class="check">✓</span><span>сетевые и идентификационные параметры</span></li>
+<li><span class="check">✓</span><span>историю изменений</span></li>
+</ul>
+<p>Что позволяет произвести точный учёт устройства и его принадлежности</p>
+<p>Понимание, где устройство находится сейчас</p>
+<p>Понимание, в каком оно статусе</p>
+<p>Понимание, что с ним происходило раньше</p>
+<p>Если у хостинга нет сильного учёта оборудования, дальше начинают страдать биллинг, клиентская прозрачность, отчётность и работа с инцидентами.</p>
+<p>Поэтому этот блок нужно описывать как базу всей системы, а не как второстепенную функцию.</p>
+</div></section>
+<section class="section" id="привязка-оборудования-к-клиенту-и-истории-перемещений"><div class="section-header"><h2>16. Привязка оборудования к клиенту и истории перемещений</h2><span class="tag">раздел</span></div><div class="section-body">
+<p>Когда оборудование связано с конкретным клиентом, система позволяет строить прозрачную модель обслуживания.</p>
+<p>Хостинг понимает, чьё это устройство, где оно стоит, какие по нему были события и как это влияет на начисления и отчёты.</p>
+<p>История перемещений также важна:</p>
+<p>она помогает понять, где устройство находилось раньше, когда и куда перемещалось и как менялся его статус. Это особенно полезно при спорных ситуациях и внутреннем контроле.</p>
+</div></section>
+<section class="section" id="подсети-техническая-инфраструктура-и-рабочая-среда"><div class="section-header"><h2>17. Подсети, техническая инфраструктура и рабочая среда</h2><span class="tag">раздел</span></div><div class="section-body">
+<p>ROC помогает работать не только со списком устройств, но и с частью технической инфраструктуры площадки: подсетями и другими связанными сущностями. Для хостинга это важно, потому что площадка в системе отражается как реальная техническая среда, а не как абстрактная папка с ASIC.</p>
+</div></section>
+<section class="section" id="биллинг"><div class="section-header"><h2>18. Биллинг</h2><span class="tag">раздел</span></div><div class="section-body">
+<p>Биллинг в ROC связан с клиентом, площадкой, оборудованием и тарифами. Это значит, что финансовый контур не живёт отдельно от операционной модели, а строится на базе реальной структуры хостинга.</p>
+<ul class="note-list">
+<li><span class="check">✓</span><span>Можно видеть начисления в рамках системы</span></li>
+<li><span class="check">✓</span><span>Биллинг связан с клиентом и его оборудованием</span></li>
+<li><span class="check">✓</span><span>Финансовая модель становится более прозрачной</span></li>
+<li><span class="check">✓</span><span>Снижается объём ручной работы и разрыв между операционкой и финансами</span></li>
+</ul>
+<p>==ВАЖНО:</p>
+<p>Когда сотрудник ОП рассказывает про биллинг, важно делать акцент не только на счётах. Надо говорить, что ROC помогает выстроить связанный финансовый контур для хостинга.==</p>
+</div></section>
+<section class="section" id="тарифы"><div class="section-header"><h2>19. Тарифы</h2><span class="tag">раздел</span></div><div class="section-body">
+<p>В ROC можно создавать тарифы и привязывать их к логике работы с клиентом.</p>
+<p>Это помогает стандартизировать коммерческие условия и убрать часть ручных ошибок, которые возникают, когда тарифы хранятся отдельно от системы.</p>
+<p>Чем больше хостинг и чем больше у него клиентов, тем опаснее ручная работа с тарифами. ROC помогает перевести эту часть работы в системный формат.</p>
+</div></section>
+<section class="section" id="выставление-счетов"><div class="section-header"><h2>20. Выставление счетов</h2><span class="tag">раздел</span></div><div class="section-body">
+<p>Система позволяет формировать счета клиентам по заданной логике.</p>
+<p>Видно, кому выставлен счёт, за какой период, на какую сумму и в каком он статусе.</p>
+<p>Для хостинга это означает более понятную коммуникацию с клиентом и меньше ручной нагрузки на сотрудников.</p>
+</div></section>
+<section class="section" id="отчётность"><div class="section-header"><h2>21. Отчётность</h2><span class="tag">раздел</span></div><div class="section-body">
+<p>ROC позволяет строить отчёты по площадкам, оборудованию, клиентам, начислениям и операционным событиям. Отчётность нужна не как формальность, а как инструмент прозрачности и управляемости.</p>
+<ul class="note-list">
+<li><span class="check">✓</span><span>Отчёты для собственника и руководителя</span></li>
+<li><span class="check">✓</span><span>Отчёты для клиента по его оборудованию и начислениям</span></li>
+<li><span class="check">✓</span><span>Отчёты по событиям, инцидентам и операционной работе</span></li>
+<li><span class="check">✓</span><span>Основа для более прозрачной работы с регуляторной и налоговой повесткой</span></li>
+<li><span class="check">✓</span><span>Отдельно для ROC важна тема подготовки отчётности для ФНС.</span></li>
+</ul>
+<p>-</p>
+<p><mark>ВАЖНО:</mark></p>
+<p><mark>говорить аккуратно: ROC помогает формировать более прозрачный контур данных по оборудованию, работе устройств и клиентским отношениям, что создаёт основу для подготовки соответствующей отчётности.</mark></p>
+</div></section>
+<section class="section" id="как-все-функции-roc-связаны-между-собой"><div class="section-header"><h2>22. Как все функции ROC связаны между собой</h2><span class="tag">раздел</span></div><div class="section-body">
+<p>Одна из главных мыслей, которую новый сотрудник должен запомнить:</p>
+<p>ROC - это не набор отдельных вкладок, его сила именно в связке функций между собой.</p>
+<ol class="number-list">
+<li>Создание хостинга и площадки</li>
+<div class="flow-arrow">↓</div>
+<li>Формирование структуры (зоны, места, подсети)</li>
+<div class="flow-arrow">↓</div>
+<li>Назначение сотрудников и ролей</li>
+<div class="flow-arrow">↓</div>
+<li>График смен → выход оператора</li>
+<div class="flow-arrow">↓</div>
+<li>Подключение агента → сбор техданных</li>
+<div class="flow-arrow">↓</div>
+<li>Оборудование в реестре ASIC</li>
+<div class="flow-arrow">↓</div>
+<li>Проблема → инцидент (ответственный + история)</li>
+<div class="flow-arrow">↓</div>
+<li>Фиксация действий сотрудников</li>
+<div class="flow-arrow">↓</div>
+<li>Привязка к клиенту и тарифу</li>
+<div class="flow-arrow">↓</div>
+<li>Биллинг, счета, отчётность</li>
+</ol>
+<p>Именно поэтому ROC нужно продавать как систему управления операционной моделью хостинга, а не как набор функций по отдельности.</p>
+</div></section>
+<section class="section" id="что-получает-хостинг-от-roc"><div class="section-header"><h2>23. Что получает хостинг от ROC</h2><span class="tag">раздел</span></div><div class="section-body">
+<ul class="note-list">
+<li><span class="check">✓</span><span>Более сильную управляемость площадки</span></li>
+<li><span class="check">✓</span><span>Прозрачность по оборудованию, событиям и действиям сотрудников</span></li>
+<li><span class="check">✓</span><span>Понимание, кто за что отвечает и кто сейчас на смене</span></li>
+<li><span class="check">✓</span><span>Меньше потерь от простоев и задержек в реакции</span></li>
+<li><span class="check">✓</span><span>Более сильный учёт ASIC и оборудования</span></li>
+<li><span class="check">✓</span><span>Более прозрачную работу с клиентами</span></li>
+<li><span class="check">✓</span><span>Связанный биллинг, тарифы, счета и отчётность</span></li>
+<li><span class="check">✓</span><span>Основу для роста без потери контроля</span></li>
+</ul>
+</div></section>
+<section class="section" id="как-правильно-говорить-о-roc-по-телефону"><div class="section-header"><h2>24. Как правильно говорить о ROC по телефону</h2><span class="tag">раздел</span></div><div class="section-body">
+<p>Новый сотрудник должен говорить о ROC простым и деловым языком.</p>
+<p>Не нужно уходить в слишком техническое описание интерфейса. Нужно говорить через задачи и пользу для хостинга.</p>
+<h3 id="хорошая-формулировка" class="subhead">24.1. Хорошая формулировка</h3>
+<p class="copyable">ROC - это система операционного управления для майнинг-хостинга. Она помогает через одну систему контролировать площадки, оборудование, операторов, инциденты, биллинг и отчётность.</p>
+<h3 id="что-лучше-не-говорить" class="subhead">24.2. Что лучше не говорить</h3>
+<ul class="note-list">
+<li><span class="check">✓</span><span>Не сводить ROC только к мониторингу</span></li>
+<li><span class="check">✓</span><span>Не перечислять подряд все кнопки и разделы без логики</span></li>
+<li><span class="check">✓</span><span>Не делать акцент только на технических показателях</span></li>
+<li><span class="check">✓</span><span>Не говорить слишком абстрактно, без связи с реальной работой хостинга</span></li>
+</ul>
+<h3 id="что-говорить-вместо-этого" class="subhead">24.3. Что говорить вместо этого</h3>
+<ul class="note-list">
+<li><span class="check">✓</span><span>ROC помогает выстроить управляемую операционную модель.</span></li>
+<li><span class="check">✓</span><span>ROC объединяет в одной системе площадки, людей, оборудование и финансовый контур.</span></li>
+<li><span class="check">✓</span><span>ROC снижает объём ручной работы и усиливает контроль.</span></li>
+<li><span class="check">✓</span><span>ROC делает прозрачнее работу с инцидентами, сменами, начислениями и клиентами.</span></li>
+</ul>
+</div></section>
+<section class="section" id="как-отвечать-на-вопрос-что-у-вас-есть"><div class="section-header"><h2>25. Как отвечать на вопрос “что у вас есть?”</h2><span class="tag">раздел</span></div><div class="section-body">
+<p>Если клиент прямо спрашивает, какие функции есть в ROC, сотрудник может отвечать так:</p>
+<ul class="note-list">
+<li><span class="check">✓</span><span>Дашборд и общая сводка по площадкам и оборудованию</span></li>
+<li><span class="check">✓</span><span>Создание хостингов и площадок, структура инфраструктуры</span></li>
+<li><span class="check">✓</span><span>Роли и доступы для сотрудников и клиентов</span></li>
+<li><span class="check">✓</span><span>Графики смен и фиксация выхода оператора на смену</span></li>
+<li><span class="check">✓</span><span>Мониторинг оборудования и технических статусов</span></li>
+<li><span class="check">✓</span><span>Инциденты, история действий и контроль реакции</span></li>
+<li><span class="check">✓</span><span>Учёт ASIC и реестр оборудования</span></li>
+<li><span class="check">✓</span><span>Привязка оборудования к клиенту и история перемещений</span></li>
+<li><span class="check">✓</span><span>Биллинг, тарифы и выставление счетов</span></li>
+<li><span class="check">✓</span><span>Отчётность по площадкам, оборудованию и клиентам</span></li>
+</ul>
+</div></section>
+<section class="section" id="частые-вопросы-и-готовые-ответы-для-нового-сотрудника"><div class="section-header"><h2>26. Частые вопросы и готовые ответы для нового сотрудника</h2><span class="tag">раздел</span></div><div class="section-body">
+<div class="table-wrap"><table class="decision-table"><tbody>
+<tr><th>Вопрос</th><th>Ответ</th></tr>
+<tr><td>У нас уже есть мониторинг.</td><td>Отлично. ROC не заменяет ценность данных мониторинга, а помогает превратить их в систему управления: связать с инцидентами, сменами, ответственностью, биллингом и отчётностью.</td></tr>
+<tr><td>Мы справляемся своими силами.</td><td>Во многих хостингах это работает до определённого объёма. ROC нужен как раз тогда, когда ручная модель начинает ограничивать рост и усложнять контроль.</td></tr>
+<tr><td>Это нам пока рано.</td><td>Такая реакция часто бывает у небольших площадок. Но если уже есть клиентское размещение, смены, споры по простоям и потребность в более точном учёте, тема становится актуальной быстрее, чем кажется.</td></tr>
+<tr><td>Это просто ещё одна программа?</td><td>Нет. ROC ценен не только интерфейсом. Это система, которая связывает в одной логике площадки, сотрудников, оборудование, инциденты, начисления и отчётность.</td></tr>
+<tr><td>Зачем нам роли и смены, если у нас и так есть люди?</td><td>Потому что важно не только наличие людей, а прозрачность ответственности: кто сейчас на смене, кто должен реагировать, кто фактически работал по инциденту.</td></tr>
+</tbody></table></div>
+</div></section>
+<section class="section" id="что-новый-сотрудник-должен-запомнить-в-первую-очередь"><div class="section-header"><h2>27. Что новый сотрудник должен запомнить в первую очередь</h2><span class="tag">раздел</span></div><div class="section-body">
+<ul class="note-list">
+<li><span class="check">✓</span><span>ROC продаётся не как “программа с графиками”, а как система управления операционной моделью хостинга.</span></li>
+<li><span class="check">✓</span><span>Мониторинг - только одна часть ROC. Продукт гораздо шире.</span></li>
+<li><span class="check">✓</span><span>Сила ROC в том, что он связывает площадки, сотрудников, смены, оборудование, инциденты, биллинг и отчётность в один контур.</span></li>
+<li><span class="check">✓</span><span>Говорить нужно через пользу для хостинга: прозрачность, контроль, снижение ручной работы, уменьшение потерь, основа для роста.</span></li>
+<li><span class="check">✓</span><span>Клиенту важно объяснять не просто “что есть в системе”, а “зачем это ему нужно и как это влияет на его работу”.</span></li>
+</ul>
+</div></section>
+<section class="section" id="готовый-текст-для-объяснения-roc-новому-клиенту"><div class="section-header"><h2>28. Готовый текст для объяснения ROC новому клиенту</h2><span class="tag">раздел</span></div><div class="section-body">
+<p>*ROC - это система операционного управления для майнинг-хостинга. Она помогает через одну систему контролировать площадки, оборудование, сотрудников, смены, инциденты, биллинг и отчётность. В ROC можно создать структуру площадки, подключить мониторинг, назначить роли, фиксировать выход операторов на смену, вести учёт ASIC, контролировать проблемы по оборудованию, строить тарифы и счета и получать понятную отчётность. За счёт этого хостинг работает более прозрачно, управляемо и системно.*</p>
+</div></section>
+<section class="section" id="итог"><div class="section-header"><h2>29. Итог</h2><span class="tag">раздел</span></div><div class="section-body">
+<p>Если описать ROC одной мыслью, то это единая система, которая помогает майнинг-хостингу управлять не только оборудованием, но и людьми, процессами, ответственностью и финансовым контуром. Для нового сотрудника отдела продаж главное - понять эту логику и уметь доносить её простым языком.</p>
+</div></section>
+        <div class="footer-note">ROC · база знаний для отдела продаж · HTML-версия для GitHub Pages</div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const sections = [...document.querySelectorAll('.section[id]')];
+    const navLinks = [...document.querySelectorAll('.nav-block:nth-of-type(2) .nav-link')];
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        navLinks.forEach((link) => link.classList.toggle('active', link.getAttribute('href') === `#${entry.target.id}`));
+      });
+    }, { rootMargin: '-25% 0px -65% 0px', threshold: 0.01 });
+
+    sections.forEach((section) => observer.observe(section));
+  </script>
+</body>
+</html>
